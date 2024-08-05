@@ -5,8 +5,15 @@ import {
   AllowedInputTypes,
   MicroRollup,
 } from "@stackr/sdk";
-import { Bridge } from "@stackr/sdk/plugins";
-import { Wallet, AbiCoder, formatEther } from "ethers";
+import { Bridge, Playground } from "@stackr/sdk/plugins";
+import {
+  Wallet,
+  AbiCoder,
+  formatEther,
+  parseEther,
+  formatUnits,
+  parseUnits,
+} from "ethers";
 import dotenv from "dotenv";
 
 import { stackrConfig } from "../stackr.config.ts";
@@ -14,7 +21,7 @@ import { machine } from "./stackr/machine.ts";
 import {
   MintTokenSchema,
   SwapTokenSchema,
-  UpdateOracelPriceSchema,
+  UpdateOraclePriceSchema,
   WithdrawTokenSchema,
 } from "./stackr/action.ts";
 import { JsonRpcProvider } from "ethers";
@@ -44,19 +51,24 @@ async function main() {
     config: stackrConfig,
     actionSchemas: [
       MintTokenSchema,
-      UpdateOracelPriceSchema,
+      UpdateOraclePriceSchema,
       SwapTokenSchema,
       WithdrawTokenSchema,
     ],
     stateMachines: [machine],
     stfSchemaMap: {
       mintToken: MintTokenSchema.identifier,
-      updateOraclePrice: UpdateOracelPriceSchema.identifier,
+      updateOraclePrice: UpdateOraclePriceSchema.identifier,
       swapToken: SwapTokenSchema.identifier,
       withdrawToken: WithdrawTokenSchema.identifier,
     },
   });
   await rollup.init();
+
+  Playground.init(rollup);
+
+  // NOTE : All the amounts in MRU are in parsed state , and not in the ETH 10^18 format
+  // They are converted from the amount we get from bridge events , and then converted again
 
   Bridge.init(rollup, {
     handlers: {
@@ -67,7 +79,7 @@ async function main() {
         const inputs = {
           token: "0x0000000000000000000000000000000000000000",
           address: _to,
-          amount: Number(formatEther(_amount)),
+          amount: _amount.toString(),
           timestamp: Date.now(),
         };
 
@@ -93,7 +105,7 @@ async function main() {
         const inputs = {
           token: _token,
           address: _to,
-          amount: Number(formatEther(_amount)),
+          amount: _amount.toString(),
           timestamp: Date.now(),
         };
 
@@ -114,16 +126,16 @@ async function main() {
         console.log("Updating oracle price to", _price);
 
         const inputs = {
-          price: _price,
+          price: _price.toString(),
           timestamp: Date.now(),
         };
 
         const signature = await signMessage(
           operator,
-          UpdateOracelPriceSchema,
+          UpdateOraclePriceSchema,
           inputs
         );
-        const action = UpdateOracelPriceSchema.actionFrom({
+        const action = UpdateOraclePriceSchema.actionFrom({
           inputs,
           signature,
           msgSender: operator.address,
@@ -160,6 +172,11 @@ async function main() {
       operator.connect(provider);
 
       const contract = new Contract(ADDRESS, ABI, operator);
+
+      // const parsedAmount =
+      //   _token == "0x0000000000000000000000000000000000000000"
+      //     ? parseEther(_amount.toString())
+      //     : parseUnits(_amount.toString(), 6);
 
       const tx = await contract.releaseTokens(_token, _to, _amount);
       console.log("Transaction hash", tx.hash);

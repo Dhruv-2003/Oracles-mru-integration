@@ -3,16 +3,16 @@ import { solidityPackedKeccak256 } from "ethers";
 
 import * as genesisState from "../../genesis-state.json";
 import { transitions } from "./transitions";
-import MerkleTree from "merkletreejs";
+import { MerkleTree } from "merkletreejs";
 
 export type Balances = {
-  [address: string]: number;
+  [address: string]: string;
 };
 
 export type BridgeStateType = {
   token1Balance: Balances;
   token2Balance: Balances;
-  price: number;
+  price: string;
 };
 
 export class BridgeTree {
@@ -33,19 +33,13 @@ export class BridgeTree {
     const hashedLeavesToken1Balance = Object.entries(
       bridgeState.token1Balance
     ).map((leaf) => {
-      return solidityPackedKeccak256(
-        ["address", "uint256"],
-        [leaf[0], leaf[1]]
-      );
+      return solidityPackedKeccak256(["address", "string"], [leaf[0], leaf[1]]);
     });
 
     const hashedLeavesToken2Balance = Object.entries(
       bridgeState.token2Balance
     ).map((leaf) => {
-      return solidityPackedKeccak256(
-        ["address", "uint256"],
-        [leaf[0], leaf[1]]
-      );
+      return solidityPackedKeccak256(["address", "string"], [leaf[0], leaf[1]]);
     });
 
     return {
@@ -73,7 +67,7 @@ export class BridgeState extends State<BridgeStateType, BridgeTree> {
 
   getRootHash(): string {
     return solidityPackedKeccak256(
-      ["bytes32", "bytes32", "uint"],
+      ["bytes32", "bytes32", "string"],
       [
         this.transformer().wrap().merkleTreeToken1.getHexRoot(),
         this.transformer().wrap().merkleTreeToken2.getHexRoot(),

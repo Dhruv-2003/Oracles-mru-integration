@@ -17,6 +17,8 @@ interface IERC20 {
         address _to,
         uint256 _value
     ) external returns (bool);
+
+    function transfer(address _to, uint256 _value) external returns (bool);
 }
 
 contract TokenBridge {
