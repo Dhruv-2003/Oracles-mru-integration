@@ -1,4 +1,10 @@
-import { ActionSchema, AllowedInputTypes, MicroRollup } from "@stackr/sdk";
+import {
+  ActionConfirmationStatus,
+  ActionEvents,
+  ActionSchema,
+  AllowedInputTypes,
+  MicroRollup,
+} from "@stackr/sdk";
 import { Bridge } from "@stackr/sdk/plugins";
 import { Wallet, AbiCoder, formatEther } from "ethers";
 import dotenv from "dotenv";
@@ -11,6 +17,9 @@ import {
   UpdateOracelPriceSchema,
   WithdrawTokenSchema,
 } from "./stackr/action.ts";
+import { JsonRpcProvider } from "ethers";
+import { Contract } from "ethers";
+import { ABI, ADDRESS } from "./contract/constants.ts";
 
 dotenv.config();
 
@@ -126,6 +135,38 @@ async function main() {
         };
       },
     },
+  });
+
+  rollup.events.subscribe(ActionEvents.CONFIRMATION_STATUS, async (event) => {
+    if (
+      event.actionName == "withdrawToken" &&
+      event.status === ActionConfirmationStatus.C1
+    ) {
+      // process the token release on chain in the contract for withdrawToken
+      // 1. find the action data for the action hash in the storage
+      const action = await rollup.actions.getByHash(event.actionHash);
+      if (!action) {
+        return;
+      }
+
+      // 2. get the action payload for token , amount & user
+      const { token: _token, amount: _amount } = action.payload;
+      const _to = action.msgSender;
+
+      // 3. call the contract method to release the token
+      console.log("Releasing token", _token, "to", _to, "with amount", _amount);
+
+      const provider = new JsonRpcProvider("=https://rpc2.sepolia.org");
+      operator.connect(provider);
+
+      const contract = new Contract(ADDRESS, ABI, operator);
+
+      const tx = await contract.releaseTokens(_token, _to, _amount);
+      console.log("Transaction hash", tx.hash);
+      await tx.wait();
+
+      console.log("Token released successfully");
+    }
   });
 }
 

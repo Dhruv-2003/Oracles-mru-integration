@@ -21,7 +21,6 @@ export const SwapTokenSchema = new ActionSchema("swapToken", {
 
 export const WithdrawTokenSchema = new ActionSchema("withdrawToken", {
   token: SolidityType.ADDRESS,
-  address: SolidityType.ADDRESS,
   amount: SolidityType.UINT,
   timestamp: SolidityType.UINT,
 });
