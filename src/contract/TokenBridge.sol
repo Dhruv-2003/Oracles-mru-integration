@@ -89,7 +89,7 @@ contract TokenBridge {
             // NOTE: Need the approval of tokens
             IERC20(_token).transferFrom(msg.sender, address(this), msg.value);
 
-            bytes memory message = abi.encode(_to, msg.value);
+            bytes memory message = abi.encode(_token, _to, msg.value);
             bytes32 identifier = keccak256("BRIDGE_ERC20");
 
             ITicketFactory(appInbox).createTicket(

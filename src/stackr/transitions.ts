@@ -169,4 +169,7 @@ const withdrawToken: STF<BridgeState, WithdrawTokenInput> = {
 
 export const transitions: Transitions<BridgeState> = {
   mintToken,
+  updateOraclePrice,
+  swapTokens,
+  withdrawToken,
 };

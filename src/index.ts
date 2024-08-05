@@ -5,7 +5,12 @@ import dotenv from "dotenv";
 
 import { stackrConfig } from "../stackr.config.ts";
 import { machine } from "./stackr/machine.ts";
-import { MintTokenSchema } from "./stackr/action.ts";
+import {
+  MintTokenSchema,
+  SwapTokenSchema,
+  UpdateOracelPriceSchema,
+  WithdrawTokenSchema,
+} from "./stackr/action.ts";
 
 dotenv.config();
 
@@ -28,10 +33,18 @@ const signMessage = async (
 async function main() {
   const rollup = await MicroRollup({
     config: stackrConfig,
-    actionSchemas: [MintTokenSchema],
+    actionSchemas: [
+      MintTokenSchema,
+      UpdateOracelPriceSchema,
+      SwapTokenSchema,
+      WithdrawTokenSchema,
+    ],
     stateMachines: [machine],
     stfSchemaMap: {
       mintToken: MintTokenSchema.identifier,
+      updateOraclePrice: UpdateOracelPriceSchema.identifier,
+      swapToken: SwapTokenSchema.identifier,
+      withdrawToken: WithdrawTokenSchema.identifier,
     },
   });
   await rollup.init();
@@ -41,9 +54,12 @@ async function main() {
       BRIDGE_ETH: async (args) => {
         const [_to, _amount] = abiCoder.decode(["address", "uint"], args.data);
         console.log("Minting token to", _to, "with amount", _amount);
+
         const inputs = {
+          token: "0x0000000000000000000000000000000000000000",
           address: _to,
           amount: Number(formatEther(_amount)),
+          timestamp: Date.now(),
         };
 
         const signature = await signMessage(operator, MintTokenSchema, inputs);
@@ -55,6 +71,57 @@ async function main() {
 
         return {
           transitionName: "mintToken",
+          action: action,
+        };
+      },
+      BRIDGE_ERC20: async (args) => {
+        const [_token, _to, _amount] = abiCoder.decode(
+          ["address", "address", "uint"],
+          args.data
+        );
+        console.log("Minting token", _token, "to", _to, "with amount", _amount);
+
+        const inputs = {
+          token: _token,
+          address: _to,
+          amount: Number(formatEther(_amount)),
+          timestamp: Date.now(),
+        };
+
+        const signature = await signMessage(operator, MintTokenSchema, inputs);
+        const action = MintTokenSchema.actionFrom({
+          inputs,
+          signature,
+          msgSender: operator.address,
+        });
+
+        return {
+          transitionName: "mintToken",
+          action: action,
+        };
+      },
+      ORACLE_ETH_USDC: async (args) => {
+        const [_price] = abiCoder.decode(["int"], args.data);
+        console.log("Updating oracle price to", _price);
+
+        const inputs = {
+          price: _price,
+          timestamp: Date.now(),
+        };
+
+        const signature = await signMessage(
+          operator,
+          UpdateOracelPriceSchema,
+          inputs
+        );
+        const action = UpdateOracelPriceSchema.actionFrom({
+          inputs,
+          signature,
+          msgSender: operator.address,
+        });
+
+        return {
+          transitionName: "updateOraclePrice",
           action: action,
         };
       },
