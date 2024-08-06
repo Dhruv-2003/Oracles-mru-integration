@@ -172,13 +172,18 @@ async function main() {
       operator.connect(provider);
 
       const contract = new Contract(ADDRESS, ABI, operator);
+      contract.connect(provider);
 
       // const parsedAmount =
       //   _token == "0x0000000000000000000000000000000000000000"
       //     ? parseEther(_amount.toString())
       //     : parseUnits(_amount.toString(), 6);
 
-      const tx = await contract.releaseTokens(_token, _to, _amount);
+      const tx = await contract.releaseTokens(
+        _token,
+        _to,
+        BigInt(_amount as string)
+      );
       console.log("Transaction hash", tx.hash);
       await tx.wait();
 

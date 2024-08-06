@@ -75,7 +75,8 @@ const swapToken: STF<BridgeState, SwapTokenInput> = {
     );
 
     // take in the current price
-    const price = state.bridgeState.price; // price for ETH / USD pair always
+    const price = BigInt(state.bridgeState.price); // price for ETH / USD pair always
+    REQUIRE(price > 0, "Price must be greater than 0");
 
     // check user Balance for the token1
     const user = msgSender as string;
@@ -89,7 +90,7 @@ const swapToken: STF<BridgeState, SwapTokenInput> = {
       const amountIn = Number(formatEther(_amount));
       const amountOut = amountIn * Number(formatUnits(price, 8));
 
-      const _amountOut = parseUnits(amountOut.toString(), 6);
+      const _amountOut = parseUnits(amountOut.toFixed(6).toString(), 6);
 
       // check pool Balance for the token2
       REQUIRE(
@@ -142,7 +143,7 @@ const swapToken: STF<BridgeState, SwapTokenInput> = {
       // calculate the amount of token1 to send to the user
       const amountIn = Number(formatUnits(amount, 6));
       const amountOut = amountIn / Number(formatUnits(price, 8));
-      const _amountOut = parseEther(amountOut.toString());
+      const _amountOut = parseEther(amountOut.toPrecision(18).toString());
 
       // check pool Balance for the token1
       REQUIRE(
