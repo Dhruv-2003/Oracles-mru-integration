@@ -71,11 +71,16 @@ contract TokenBridge {
 
     // User can bridge tokens from sepolia to the MRU
     // Funds are locked in the contract until the MRU contract releases them
-    function bridgeTokens(address _token, address _to) external payable {
+    function bridgeTokens(
+        address _token,
+        address _to,
+        uint _amount
+    ) external payable {
         require(_to != address(0), "bridgeTokens/zero-address");
 
         if (_token == address(0)) {
             require(msg.value > 0, "bridgeTokens/zero-amount");
+            require(msg.value == _amount, "bridgeTokens/eth-amount");
 
             bytes memory message = abi.encode(_to, msg.value);
             bytes32 identifier = keccak256("BRIDGE_ETH");
@@ -87,11 +92,12 @@ contract TokenBridge {
             );
         } else {
             require(msg.value == 0, "bridgeTokens/eth-amount");
+            require(_amount > 0, "bridgeTokens/zero-amount");
 
             // NOTE: Need the approval of tokens
-            IERC20(_token).transferFrom(msg.sender, address(this), msg.value);
+            IERC20(_token).transferFrom(msg.sender, address(this), _amount);
 
-            bytes memory message = abi.encode(_token, _to, msg.value);
+            bytes memory message = abi.encode(_token, _to, _amount);
             bytes32 identifier = keccak256("BRIDGE_ERC20");
 
             ITicketFactory(appInbox).createTicket(
