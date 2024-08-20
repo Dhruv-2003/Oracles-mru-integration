@@ -6,9 +6,9 @@ This guide provides step-by-step instructions for integrating Oracle services wi
 
 ## Prerequisites
 
-Basic understanding of Stackr Micro Rollups.
-Familiarity with Solidity and smart contract deployment.
-Access to the desired Oracle service (Chainlink, Chronicle, Pyth).
+- Basic understanding of Stackr Micro Rollups.
+- Familiarity with Solidity and smart contract deployment.
+- Access to the desired Oracle service (Chainlink, Chronicle, Pyth).
 
 ## How to build ?
 
