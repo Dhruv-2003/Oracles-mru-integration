@@ -2,13 +2,25 @@
 
 ## Overview
 
-This guide provides step-by-step instructions for integrating Oracle services with Stackr Micro Rollups (MRU) using a bridge contract. This setup allows you to feed external price data into the rollup, enabling state transitions based on live data from Chainlink, Chronicle, or Pyth.
+This guide provides basic instructions for integrating Oracle services with Stackr Micro Rollups (MRU) using a bridge contract. This setup allows you to feed external price data into the rollup, enabling state transitions based on live data from Chainlink, Chronicle, or Pyth.
+
+## What are Oracles
+
+Oracles are external data sources that provide real-world information to blockchain networks. They act as a bridge between off-chain data and on-chain smart contracts, allowing contracts to execute based on external events or information.
+
+There are several type of data feeds offered by oracles like Price Feeds, Proof of reserve Feeds, Entropy, etc. from the following oracle networks -
+
+- [**Chainlink**](https://chain.link/)
+- [**Pyth**](https://www.pyth.network/)
+- [**Chronicle**](https://chroniclelabs.org/)
 
 ## Prerequisites
 
-- Basic understanding of Stackr Micro Rollups.
-- Familiarity with Solidity and smart contract deployment.
-- Access to the desired Oracle service (Chainlink, Chronicle, Pyth).
+Before you begin this tutorial, please ensure you go through the following:
+
+- Basic understanding of the Stackr Micro rollup framework: [Zero to One](/build/zero-to-one/getting-started)
+- Familiarity with Solidity and smart contract deployment
+- Knowledge & access to the preferred oracle service: [What are Blockchain Oracle](https://chain.link/education/blockchain-oracles)
 
 ## How to build ?
 
@@ -71,6 +83,7 @@ export const UpdateOraclePriceSchema = new ActionSchema("updateOraclePrice", {
 
 2. Integrate with Oracle: Depending on the Oracle service, integrate the appropriate API or contract to retrieve live price data.
 
+You can replace the address according the pair and the network of you choice in the above examples
  
 Example for Chainlink
 ```solidity 
