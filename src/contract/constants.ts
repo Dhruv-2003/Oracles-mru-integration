@@ -1,4 +1,6 @@
-export const ADDRESS = "0x12A5Ed14a152CA56690b6d345e998C0d90d53B6B";
+export const CHRONICLE_ADDRESS = "0x1f6bdb3c507Ff4973C9CdfC67b3806a020e38be2";
+
+export const CHAINLINK_ADDRESS = "0x12A5Ed14a152CA56690b6d345e998C0d90d53B6B";
 export const ABI = [
   {
     inputs: [

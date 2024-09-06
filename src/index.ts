@@ -192,4 +192,9 @@ async function main() {
   });
 }
 
+// NOTE : Units are different for Different oracles
+// Chanlink : 8
+// Pyth : 8
+// Chronicle : 18
+
 main();
